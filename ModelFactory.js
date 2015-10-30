@@ -99,11 +99,21 @@
 ModelFactory.factory('BaseCollection', ['$http',function($http) {
 
   var BaseCollection = function(options) {
+    this.initialize(options);
+  }
+
+  BaseCollection.parentOf =  function(child) {
+    var Surrogate = function() {};
+    Surrogate.prototype = this.prototype;
+    child.prototype  = new Surrogate();
+  }
+
+  BaseCollection.prototype.initialize = function(options) {
     this.model = options.model;
-    this.url = options.url;
+    this.url = options.url
     this.models = [];
     this.modelsById = {};
-    this.comparator = options.comparator || "id";
+    this.comparator = options.comparator || 'id';
     this.reverse = false;
   }
 
