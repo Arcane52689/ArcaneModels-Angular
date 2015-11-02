@@ -16,14 +16,14 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
 ### Methods
 
 + BaseModel.parentOf(class) : Creates an inheritance structure, establishing BaseModel as the parent class of the given class
-+ initialize(data) : the initialization function. Takes the data object and calls updateAttributes. Also sets this.\_collection
-+ fetch(options) fetches data, can take success and error callbacks in the options
-+ get(property) : returns the value set for that property
-+ set(property, value) : sets the value of property to the given value
-+ isNew() : returns true if the model lacks an id property
-+ url() : returns the appropriate url depending on whether or not the model has an id.
-+ save(options) : attempts to create or update the model in the database depending on the result of the isNew method. Takes an options object with a success callback and an error callback
-+ destroy(options) : issues a delete request to the url given _url_. If successful, it then removes itself from all collections
++ **initialize**(data) : the initialization function. Takes the data object and calls updateAttributes. Also sets this.\_collection
++ **fetch**(options) fetches data, can take success and error callbacks in the options
++ **get**(property) : returns the value set for that property
++ **set**(property, value) : sets the value of property to the given value
++ **isNew**() : returns true if the model lacks an id property
++ **url**() : returns the appropriate url depending on whether or not the model has an id.
++ **save**(options) : attempts to create or update the model in the database depending on the result of the isNew method. Takes an options object with a success callback and an error callback
++ **destroy**(options) : issues a delete request to the url given _url_. If successful, it then removes itself from all collections
 
 
 ## Collections
@@ -40,15 +40,15 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
 
 ### Methods
 
-+ fetch(options) : performs a get request to the collection's url, and then parses the returned data into models. Takes an options object, with success and error callbacks
-+ addModels(dataArray) : takes a list of data attributes and converts it into model objects, then adds them to the collection
-+ addModel(data) : takes a single data object and transforms it into the corresponding model, then adds the model to the collection
-+ add(model) : takes a model and adds it to the collection
-+ find(id) : takes an id and finds and returns the model with that id. Returns undefined if no model with that id exists.
-+ findIndex(id) : same as _find_, but returns the index of the given model, or -1 if it's not found.
-+ remove(id||model) : removes the given model from the collection.
-+ sort(callback) : sorts the model collection, either by the comparator or by the callback. The callback must return 1 , -1, or 0.
-+ each(callback) : takes a callback, and performs it once for each model, passing the model, the index, and the array in that order. It also uses call to bind the collection as _this_ unless the callback is otherwise bound
-+ where(callback) : takes a callback that should return either true or false as a parameter and returns a duplicated collection containing only models that returned true.
-+ all() : returns an array containing all models
-+ first(n) : takes an integer, n, and returns the first n models.
++ **fetch**(options) : performs a get request to the collection's url, and then parses the returned data into models by calling _addModels_. Takes an options object, with success and error callbacks. On success, it calls this.add
++ **addModels**(dataArray) : takes a list of data attributes and converts it into model objects, then adds them to the collection
++ **addModel**(data) : takes a single data object and transforms it into the corresponding model, then adds the model to the collection
++ **add**(model) : takes a model and adds it to the collection
++ **find**(id) : takes an id and finds and returns the model with that id. Returns undefined if no model with that id exists.
++ **findIndex**(id) : same as _find_, but returns the index of the given model, or -1 if it's not found.
++ **remove(id||model)** : removes the given model from the collection.
++ **sort**(callback ||) : sorts the model collection, either by the comparator or by the callback. The callback must return 1 , -1, or 0.
++ **each**(callback) : takes a callback, and performs it once for each model, passing the model, the index, and the array in that order. It also uses call to bind the collection as _this_ unless the callback is otherwise bound
++ **where**(callback) : takes a callback that should return either true or false as a parameter and returns a duplicated collection containing only models that returned true.
++ **all**() : returns an array containing all models
++ **first**(n || ) : takes an integer, n, and returns the first n models. If n isn't present, it will just return the first model.
