@@ -15,7 +15,7 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
 
 ### Methods
 
-+ BaseModel.parentOf(class) : Creates an inheritance structure, establishing BaseModel as the parent class of the given class
++ **BaseModel.parentOf**(class) : Creates an inheritance structure, establishing BaseModel as the parent class of the given class.
 + **initialize**(data) : the initialization function. Takes the data object and calls updateAttributes. Also sets this.\_collection
 + **fetch**(options) fetches data, can take success and error callbacks in the options
 + **get**(property) : returns the value set for that property
@@ -39,7 +39,7 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
 
 
 ### Methods
-
++ **BaseCollection.parentOf**(subclass) : Takes a subclass and establishes a prototypical inheritance with BaseCollection being the parent.
 + **fetch**(options) : performs a get request to the collection's url, and then parses the returned data into models by calling _addModels_. Takes an options object, with success and error callbacks. On success, it calls this.add
 + **addModels**(dataArray) : takes a list of data attributes and converts it into model objects, then adds them to the collection
 + **addModel**(data) : takes a single data object and transforms it into the corresponding model, then adds the model to the collection

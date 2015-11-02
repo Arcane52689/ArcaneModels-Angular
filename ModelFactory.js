@@ -11,7 +11,7 @@
 
     BaseModel.parentOf =  function(child) {
       var Surrogate = function() {};
-      Surrogate.prototype = this.prototype;
+      Surrogate.prototype = BaseModel.prototype;
       child.prototype  = new Surrogate();
     }
 
@@ -140,7 +140,7 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
 
   BaseCollection.parentOf =  function(child) {
     var Surrogate = function() {};
-    Surrogate.prototype = this.prototype;
+    Surrogate.prototype = BaseCollection.prototype;
     child.prototype  = new Surrogate();
   }
 
