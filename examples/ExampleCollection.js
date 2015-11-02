@@ -1,7 +1,7 @@
 
 // Unlike the BaseModel, the BaseColleciton can be used as is, without create a new one
 angular.module('MyProject').factory('NewModelCollection', ['BaseCollection', 'NewModel', function(BaseCollection, NewModel) {
-  var NewModelCollection = BaseCollection({
+  var NewModelCollection = new BaseCollection({
     model: NewModel,  // Whatever the model of the colleciton you want is
     url: "api/new_models" // Whatever the url for your collection is
   })

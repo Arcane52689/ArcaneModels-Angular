@@ -177,8 +177,10 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
   }
 
   BaseCollection.prototype.each = function(callback) {
-    for (model in this.models) {
-      callback(model);
+      var model, idx
+    for (idx = 0; idx < this.models.length; idx++) {
+      model = this.models[idx];
+      callback.call(this, model, idx, this.models)
     }
     return this;
   }
@@ -259,10 +261,11 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
   }
 
   BaseCollection.prototype.where = function(callback) {
-    var result = new BaseCollection({
+    var result = new this.constructor({
       model: this.model,
       url: undefined,
-      comparator: this.comparator
+      comparator: this.comparator,
+      reverse: this.reverse
     })
 
     this.models.forEach(function(model) {

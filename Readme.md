@@ -15,8 +15,6 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
 
 ### Methods
 
-
-#### Public
 + BaseModel.parentOf(class) : Creates an inheritance structure, establishing BaseModel as the parent class of the given class
 + initialize(data) : the initialization function. Takes the data object and calls updateAttributes. Also sets this.\_collection
 + fetch(options) fetches data, can take success and error callbacks in the options
@@ -27,10 +25,30 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
 + save(options) : attempts to create or update the model in the database depending on the result of the isNew method. Takes an options object with a success callback and an error callback
 + destroy(options) : issues a delete request to the url given _url_. If successful, it then removes itself from all collections
 
-#### Private
-+ updateAttributes(data) : takes an object as the parameter and then assigns each key value pair to the attributes object. If the key already exists, it's overwritten
-+ create(options) : called by _save_ to make a post request to the server
-+ update(options) : called by _save_ to make a put request to the server
-
 
 ## Collections
+  A collection represents a set of models. At the moment, each model should have an id attribute, but I'll be working to add cid's next so that won't be for long.
+
+  There are two ways to instantiate a new collection. The first is creating a new subclass of collection, like so
+  ![new-collection1](./images/new-collection2.png)
+  After creating the subclass and calling this.initialize(), you type _BaseCollection.parentOf(subclass)_. This will establish the inheritance structure.
+
+   Unlike a BaseModel, the BaseCollection can be used on it's own, without creating a new subclass. This is because in most basic cases, the only thing that changes between collections is the url and the model attributes. So as long as you don't need to overwrite any existing methods or define new ones, you can do this:
+   ![new-collection2](./images/new-collection1.png)
+   BaseCollection(options) takes an options object, with a url and a model, as well as a comparator and reverse option.
+
+
+### Methods
+
++ fetch(options) : performs a get request to the collection's url, and then parses the returned data into models. Takes an options object, with success and error callbacks
++ addModels(dataArray) : takes a list of data attributes and converts it into model objects, then adds them to the collection
++ addModel(data) : takes a single data object and transforms it into the corresponding model, then adds the model to the collection
++ add(model) : takes a model and adds it to the collection
++ find(id) : takes an id and finds and returns the model with that id. Returns undefined if no model with that id exists.
++ findIndex(id) : same as _find_, but returns the index of the given model, or -1 if it's not found.
++ remove(id||model) : removes the given model from the collection.
++ sort(callback) : sorts the model collection, either by the comparator or by the callback. The callback must return 1 , -1, or 0.
++ each(callback) : takes a callback, and performs it once for each model, passing the model, the index, and the array in that order. It also uses call to bind the collection as _this_ unless the callback is otherwise bound
++ where(callback) : takes a callback that should return either true or false as a parameter and returns a duplicated collection containing only models that returned true.
++ all() : returns an array containing all models
++ first(n) : takes an integer, n, and returns the first n models.
