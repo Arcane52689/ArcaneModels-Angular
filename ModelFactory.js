@@ -4,11 +4,20 @@
 
   ModelFactory.factory( 'BaseModel', ['$http', function($http) {
 
+    var BaseModel = function(data) {
+      this.initialize(data);
+  }
+
 
     BaseModel.parentOf =  function(child) {
       var Surrogate = function() {};
       Surrogate.prototype = this.prototype;
       child.prototype  = new Surrogate();
+    }
+
+    BaseModel.prototype.initialize = function(data) {
+      this.updateAttributes(data);
+      this.collections = [];
     }
 
     BaseModel.prototype.updateAttributes = function(data) {
@@ -91,6 +100,33 @@
       }
 
     }
+
+    BaseModel.prototype.belongsTo = function(collection) {
+      this.collections.push(collection)
+      return this;
+    }
+
+    BaseModel.prototype.removeFromCollections = function() {
+      this.collections.forEach(function(collection) {
+        collection.remove(this.id);
+      }.bind(this));
+      return this;
+    }
+
+
+
+    BaseModel.prototype.destroy = function(options) {
+      options = options || {};
+      $http.delete(this.url).success(function() {
+        this.removeFromCollections();
+        options.success && options.success()
+      }.bind(this)).error(function() {
+        options.error && options.error
+      })
+    }
+
+
+
 
     return BaseModel;
 
@@ -192,13 +228,34 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
     return this;
   }
 
-
+  BaseCollection.prototype.remove = function(id) {
+    if (typeof id === 'object') {
+      id = id.id
+    }
+    if ( this.modelsById[id]) {
+      delete this.modelsById[id];
+      var index = this.findIndex(id);
+      if (index >=0) {
+        this.models.splice(index, 1);
+      }
+    }
+  }
 
 
 
 
   BaseCollection.prototype.find = function(id) {
     return this.modelsById[id];
+  }
+
+  BaseCollection.prototype.findIndex = function(id) {
+    var index = -1
+    this.models.forEach(function(model, idx) {
+      if (model.id === id) {
+        index = idx;
+      }
+    })
+    return index;
   }
 
   BaseCollection.prototype.where = function(callback) {
@@ -222,7 +279,7 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
   // returns the first n items in the collection. if no number is passed, it returns the first item
   BaseCollection.prototype.first = function(n) {
     n = n || 1;
-    return this.models.splice(0, n);
+    return this.models.slice(0, n);
   }
 
   return BaseCollection;
