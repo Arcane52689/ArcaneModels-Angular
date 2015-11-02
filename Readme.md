@@ -9,14 +9,14 @@ To include this in your project, first you need to inject 'AngularModelFactory' 
 ## Models
 To instantiate a model, simply type the following:
 ![new-model](./images/new-model1.png)
-Where NewModel is the name of the model and urlBase is the portion of the url, minus the id.  For non-RESTful API's, the prototype.url() function can be overwritten. It is very important to call this.updateAttributes(data). This is function that parses the data into attributes.  
+Where NewModel is the name of the model and urlBase is the portion of the url, minus the id.  For non-RESTful API's, the prototype.url() function can be overwritten. It is very important to call this.initialize(data). This is function that parses the data into attributes.  
 
 To bind the attributes to an input, you can't use the get or set methods. Instead, you must directly access the attribute, using _model.attributes.propertyName_
 
 ### Methods
 
 + **BaseModel.parentOf**(class) : Creates an inheritance structure, establishing BaseModel as the parent class of the given class.
-+ **initialize**(data) : the initialization function. Takes the data object and calls updateAttributes. Also sets this.\_collection
++ **initialize**(data) : the initialization function. Takes the data object and calls updateAttributes. Also sets this.\_collections to an empty array. If you overwrite this method, it's recommended you add this line "BaseModel.prototype.updateAttributes.call(this, data)" in order to maintain functionality.
 + **fetch**(options) fetches data, can take success and error callbacks in the options
 + **get**(property) : returns the value set for that property
 + **set**(property, value) : sets the value of property to the given value
