@@ -18,13 +18,14 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
 
 #### Public
 + BaseModel.parentOf(class) : Creates an inheritance structure, establishing BaseModel as the parent class of the given class
++ initialize(data) : the initialization function. Takes the data object and calls updateAttributes. Also sets this.\_collection
 + fetch(options) fetches data, can take success and error callbacks in the options
 + get(property) : returns the value set for that property
 + set(property, value) : sets the value of property to the given value
 + isNew() : returns true if the model lacks an id property
 + url() : returns the appropriate url depending on whether or not the model has an id.
 + save(options) : attempts to create or update the model in the database depending on the result of the isNew method. Takes an options object with a success callback and an error callback
-
++ destroy(options) : issues a delete request to the url given _url_. If successful, it then removes itself from all collections
 
 #### Private
 + updateAttributes(data) : takes an object as the parameter and then assigns each key value pair to the attributes object. If the key already exists, it's overwritten

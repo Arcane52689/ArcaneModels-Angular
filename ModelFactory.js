@@ -17,7 +17,7 @@
 
     BaseModel.prototype.initialize = function(data) {
       this.updateAttributes(data);
-      this.collections = [];
+      this._collections = [];
     }
 
     BaseModel.prototype.updateAttributes = function(data) {
@@ -102,12 +102,12 @@
     }
 
     BaseModel.prototype.belongsTo = function(collection) {
-      this.collections.push(collection)
+      this._collections.push(collection)
       return this;
     }
 
     BaseModel.prototype.removeFromCollections = function() {
-      this.collections.forEach(function(collection) {
+      this._collections.forEach(function(collection) {
         collection.remove(this.id);
       }.bind(this));
       return this;
