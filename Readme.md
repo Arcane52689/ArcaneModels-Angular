@@ -1,5 +1,5 @@
 #AngularModelFactory
-This is a lightweight model and collection system I created to emulate some of the functionality found in backbone.  I understand that this setup is more confusing than that of Backbone, but I really wanted this system to be usable without any additional frameworks/scripts. So that meant doing without underscore and the wondrous _extend_ method.
+This is a lightweight model and collection system I created to emulate some of the functionality found in backbone. To keep the system lightweight, no additional frameworks/scripts were included(meaning no underscore.js)
 
 
 ## Setup
