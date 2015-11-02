@@ -285,6 +285,34 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
     return this.models.slice(0, n);
   }
 
+  BaseCollection.prototype.any = function(callback) {
+    for (var i = 0; i < this.models.length; i++) {
+      if (callback(model, i)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  BaseCollection.prototype.none = function(callback) {
+    return !this.any(callback);
+  }
+
+  BaseCollection.prototype.empty = function() {
+    return (this.models.length === 0);
+  }
+
+  BaseCollection.prototype.map = function(callback) {
+    var model, result, results, i;
+    results = [];
+    for (i = 0; i < this.models.length; i++) {
+      model = this.models[i];
+      result = callback(model, i, this.models);
+      results.push(result);
+    }
+    return results;
+  }
+
   return BaseCollection;
 
 }])
