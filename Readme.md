@@ -46,7 +46,7 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
 + **add**(model) : takes a model and adds it to the collection
 + **find**(id) : takes an id and finds and returns the model with that id. Returns undefined if no model with that id exists.
 + **findIndex**(id) : same as _find_, but returns the index of the given model, or -1 if it's not found.
-+ **remove(id||model)** : removes the given model from the collection.
++ **remove**(id||model) : removes the given model from the collection.
 + **sort**(callback ||) : sorts the model collection, either by the comparator or by the callback. The callback must return 1 , -1, or 0.
 + **each**(callback) : takes a callback, and performs it once for each model, passing the model, the index, and the array in that order. It also uses call to bind the collection as _this_ unless the callback is otherwise bound
 + **where**(callback) : takes a callback that should return either true or false as a parameter and returns a duplicated collection containing only models that returned true.
