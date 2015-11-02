@@ -8,7 +8,20 @@ To include this in your project, first you need to inject 'AngularModelFactory' 
 
 ## Models
 To instantiate a model, simply type the following:
-![new-model](./images/new-model1.png)
+
+```
+app.factory('NewModel', ['BaseModel', function(BaseModel) {
+  var NewModel = function(data) {
+    this.initialize(data);
+    this.urlBase = "api/new_url"
+  }
+  //This sets up the interitance structure, so that the NewModel inherits all the prototype functions of BaseModel
+  BaseModel.parentOf(NewModel);
+
+  return NewModel
+}])
+
+```
 Where NewModel is the name of the model and urlBase is the portion of the url, minus the id.  For non-RESTful API's, the prototype.url() function can be overwritten. It is very important to call this.initialize(data). This is function that parses the data into attributes.  
 
 To bind the attributes to an input, you can't use the get or set methods. Instead, you must directly access the attribute, using _model.attributes.propertyName_
@@ -30,11 +43,35 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
   A collection represents a set of models. At the moment, each model should have an id attribute, but I'll be working to add cid's next so that won't be for long.
 
   There are two ways to instantiate a new collection. The first is creating a new subclass of collection, like so
-  ![new-collection1](./images/new-collection2.png)
+  ```
+  angular.module('MyProject').factory('NewModelCollection', ['BaseCollection', 'NewModel', function(BaseCollection, NewModel) {
+    var NewModelCollection = function(options) {
+      this.initialize(options)
+    }
+
+    BaseCollection.parentOf(NewModelCollection);
+
+    return NewModelCollection;
+  } ])
+
+  ```
   After creating the subclass and calling this.initialize(), you type _BaseCollection.parentOf(subclass)_. This will establish the inheritance structure.
 
    Unlike a BaseModel, the BaseCollection can be used on it's own, without creating a new subclass. This is because in most basic cases, the only thing that changes between collections is the url and the model attributes. So as long as you don't need to overwrite any existing methods or define new ones, you can do this:
-   ![new-collection2](./images/new-collection1.png)
+
+   ```
+   angular.module('MyProject').factory('NewModelCollection', ['BaseCollection', 'NewModel', function(BaseCollection, NewModel) {
+     var NewModelCollection = new BaseCollection({
+       model: NewModel,  // Whatever the model of the colleciton you want is
+       url: "api/new_models" // Whatever the url for your collection is
+     })
+
+     NewModelCollection.fetch();
+
+     return NewModelCollection
+   } ])
+   ```
+
    BaseCollection(options) takes an options object, with a url and a model, as well as a comparator and reverse option.
 
 
