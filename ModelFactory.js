@@ -70,7 +70,6 @@
 
     BaseModel.prototype.update = function(options) {
       $http.put(this.url(), this.attributes).success(function(resp) {
-        debugger
         this.updateAttributes(resp);
         options.success && options.success(resp);
       }.bind(this)).error(function(resp, options) {
@@ -165,6 +164,7 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
   }
 
   BaseCollection.prototype.addModels = function(dataArr) {
+    debugger
     this.adding = true;
     dataArr.forEach(this.addModel.bind(this));
     this.adding = false
@@ -197,6 +197,7 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
       this.models.push(model)
     }
     if (!this.adding) {
+      debugger
       this.sort();
     }
   }
@@ -225,6 +226,7 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
   }
 
   BaseCollection.prototype.sort = function(callback) {
+    console.log('sorting')
     callback = callback || this.compare.bind(this);
     this.models.sort(callback);
     return this;
@@ -267,12 +269,13 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
       comparator: this.comparator,
       reverse: this.reverse
     })
-
+    result.adding = true
     this.models.forEach(function(model) {
       if (callback(model)) {
         result.add(model);
       }
     })
+    result.sort()
     return result;
   }
 
