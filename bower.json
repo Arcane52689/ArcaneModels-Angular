@@ -1,0 +1,27 @@
+{
+  "name": "Angular-ModelFactory",
+  "homepage": "https://github.com/Arcane52689/AngularModelFactory",
+  "authors": [
+    "Arcane52689 <tjenkins52689@gmail.com>"
+  ],
+  "description": "\"A utitlity for angular to provide front end data modeling similar to Backbone.js\"",
+  "main": "ModelFactory.js",
+  "moduleType": [
+    "es6"
+  ],
+  "keywords": [
+    "Models",
+    "Collections"
+  ],
+  "license": "-",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+  "angular": "~1.4.8",
+}
+}
