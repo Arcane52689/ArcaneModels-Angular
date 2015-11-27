@@ -28,7 +28,7 @@
           this.attributes[key] = data[key];
         }
       }
-      if (data.id) {
+      if (typeof data.id !=='undefined') {
         this.id = data.id;
       }
     }
@@ -137,7 +137,7 @@
 
 }])
 
-ModelFactory.factory('BaseCollection', ['$http',function($http) {
+ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, BaseModel) {
 
   var BaseCollection = function(options) {
     this.initialize(options);
@@ -150,12 +150,12 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
   }
 
   BaseCollection.prototype.initialize = function(options) {
-    this.model = options.model;
+    this.model = options.model || BaseModel;
     this.url = options.url
     this.models = [];
     this.modelsById = {};
     this.comparator = options.comparator || 'id';
-    this.reverse = false;
+    this.reverse = options.reverse || false;
   }
 
   BaseCollection.prototype.fetch = function(options) {
@@ -169,8 +169,9 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
     })
   }
 
+  /* adding functions */
+
   BaseCollection.prototype.addModels = function(dataArr) {
-    debugger
     this.adding = true;
     dataArr.forEach(this.addModel.bind(this));
     this.adding = false
@@ -182,14 +183,7 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
     this.add(model);
   }
 
-  BaseCollection.prototype.each = function(callback) {
-      var model, idx
-    for (idx = 0; idx < this.models.length; idx++) {
-      model = this.models[idx];
-      callback.call(this, model, idx, this.models)
-    }
-    return this;
-  }
+
 
   BaseCollection.prototype.add = function(model) {
     if (model.id) {
@@ -210,13 +204,28 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
     }
   }
 
+
+  BaseCollection.prototype.remove = function(id) {
+    if (typeof id === 'object') {
+      id = id.id
+    }
+    if ( this.modelsById[id]) {
+      delete this.modelsById[id];
+      var index = this.findIndex(id);
+      if (index >=0) {
+        this.models.splice(index, 1);
+      }
+    }
+  }
+  /* Sorting Functions */
+
   BaseCollection.prototype.reverseOrder = function() {
     this.reverse = this.reverse ? false : true;
     return this;
   }
 
 
-
+  /* compare is a private function used to compare two models by the comparator */
   BaseCollection.prototype.compare = function(c1, c2) {
     var attribute1 = c1.get(this.comparator);
     var attribute2 = c2.get(this.comparator);
@@ -240,19 +249,9 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
     return this;
   }
 
-  BaseCollection.prototype.remove = function(id) {
-    if (typeof id === 'object') {
-      id = id.id
-    }
-    if ( this.modelsById[id]) {
-      delete this.modelsById[id];
-      var index = this.findIndex(id);
-      if (index >=0) {
-        this.models.splice(index, 1);
-      }
-    }
-  }
 
+
+/* search function */
 
 
 
@@ -269,6 +268,7 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
     })
     return index;
   }
+/*  subset functions */
 
   BaseCollection.prototype.where = function(callback) {
     var result = new this.constructor({
@@ -293,11 +293,19 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
   // returns the first n items in the collection. if no number is passed, it returns the first item
   BaseCollection.prototype.first = function(n) {
     n = n || 1;
-    return this.models.slice(0, n);
+    if (n=== 1) {
+      return this.models[0]
+    } else {
+      return this.models.slice(0, n);
+    }
   }
 
+/* information functions */
   BaseCollection.prototype.any = function(callback) {
+    var model
+    callback = callback || function() { return true };
     for (var i = 0; i < this.models.length; i++) {
+      model = this.models[i];
       if (callback(model, i)) {
         return true;
       }
@@ -309,9 +317,34 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
     return !this.any(callback);
   }
 
+  BaseCollection.prototype.count = function(callback) {
+    callback = callback || function() { return true };
+    var count = 0;
+    this.each(function(model) {
+      if (callback(model)) {
+        count += 1;
+      }
+    })
+    return count;
+  }
+
+
   BaseCollection.prototype.empty = function() {
     return (this.models.length === 0);
   }
+
+
+/* iteration function */
+
+  BaseCollection.prototype.each = function(callback) {
+      var model, idx
+    for (idx = 0; idx < this.models.length; idx++) {
+      model = this.models[idx];
+      callback.call(this, model, idx, this.models)
+    }
+    return this;
+  }
+
 
   BaseCollection.prototype.map = function(callback) {
     var model, result, results, i;
@@ -323,6 +356,10 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
     }
     return results;
   }
+
+
+
+
 
   return BaseCollection;
 
