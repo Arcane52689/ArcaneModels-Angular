@@ -72,7 +72,7 @@
       $http.put(this.url(), this.attributes).success(function(resp) {
         this.updateAttributes(resp);
         options.success && options.success(resp);
-      }.bind(this)).error(function(resp, options) {
+      }.bind(this)).error(function(resp) {
         options.error && options.error(resp)
       })
     }
@@ -109,6 +109,7 @@
       this._collections.forEach(function(collection) {
         collection.remove(this.id);
       }.bind(this));
+      this._collections = [];
       return this;
     }
 
@@ -116,12 +117,17 @@
 
     BaseModel.prototype.destroy = function(options) {
       options = options || {};
-      $http.delete(this.url).success(function() {
+      if (this.id) {
+        $http.delete(this.url()).success(function(resp) {
+          this.removeFromCollections();
+          options.success && options.success(resp)
+        }.bind(this)).error(function(resp) {
+          options.error && options.error(resp)
+        }.bind(this))
+      } else {
         this.removeFromCollections();
-        options.success && options.success()
-      }.bind(this)).error(function() {
-        options.error && options.error
-      })
+      }
+
     }
 
 
@@ -192,12 +198,14 @@ ModelFactory.factory('BaseCollection', ['$http',function($http) {
       } else {
         this.modelsById[model.id] = model;
         this.models.push(model);
+        model.belongsTo(this)
       }
     } else {
       this.models.push(model)
+      model.belongsTo(this)
+
     }
     if (!this.adding) {
-      debugger
       this.sort();
     }
   }
