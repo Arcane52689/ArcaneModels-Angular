@@ -151,11 +151,12 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
 
   BaseCollection.prototype.initialize = function(options) {
     this.model = options.model || BaseModel;
-    this.url = options.url
+    this.url = options.url;
     this.models = [];
     this.modelsById = {};
     this.comparator = options.comparator || 'id';
     this.reverse = options.reverse || false;
+    this.perPage = options.perPage || 25;
   }
 
   BaseCollection.prototype.fetch = function(options) {
@@ -356,6 +357,23 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     }
     return results;
   }
+
+
+  /* pagination */
+
+  BaseCollection.prototype.pages = function() {
+    return Math.ceil(this.models.length / this.perPage);
+  }
+
+  BaseCollection.prototype.getStartIndex = function(page) {
+    return this.perPage * (page - 1);
+  }
+
+
+  BaseCollection.prototype.getPage = function(pageNumber) {
+    return this.models.slice(this.getStartIndex(pageNumber), this.perPage);
+  }
+
 
 
 

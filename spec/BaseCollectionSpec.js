@@ -342,6 +342,39 @@ describe('BaseCollection', function() {
       });
     });
 
+    describe("Pagination Methods", function() {
+      describe("BaseCollection.prototype.pages", function() {
+        it("should return the total number of pages in the collection", function() {
+          expect(collection.pages()).toBe(4);
+        })
+
+        it("should change the number of pages when perPage is changed", function() {
+          collection.perPage = 10;
+          expect(collection.pages()).toBe(10);
+        })
+
+      })
+
+      describe("BaseCollection.prototype.getStartIndex", function() {
+        it("should return 0 for the first page", function() {
+          expect(collection.getStartIndex(1)).toBe(0);
+        })
+
+        it("should return perPage for the second Page", function() {
+          expect(collection.getStartIndex(2)).toBe(25);
+        })
+
+      })
+
+      describe("BaseCollection.prototype.getPage", function() {
+        it("should return the first 25 items for the first page", function() {
+          expect(collection.getPage(1).length).toBe(25);
+          expect(collection.getPage(1)[24].id).toBe(24);
+        })
+      })
+
+    })
+
   })
 
 
