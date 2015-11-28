@@ -318,6 +318,16 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     return !this.any(callback);
   }
 
+  BaseCollection.prototype.areAll = function(callback) {
+    for (var i = 0; i < this.models.length; i++) {
+      if (!callback(this.models[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+
   BaseCollection.prototype.count = function(callback) {
     callback = callback || function() { return true };
     var count = 0;

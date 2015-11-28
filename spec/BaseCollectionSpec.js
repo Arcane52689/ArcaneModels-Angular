@@ -305,6 +305,17 @@ describe('BaseCollection', function() {
         });
       });
 
+      describe("BaseCollection.prototype.areAll", function() {
+        it("should take a call back as an arugment and return true if all items meet the criteria", function() {
+          result = collection.areAll(function(m) {
+            return !(typeof m.id === 'undefined');
+          })
+          expect(result).toBe(true);
+        })
+
+
+      })
+
 
       describe("BaseCollection.prototype.empty", function() {
         it("should return false if the collection is not empty", function() {
