@@ -19,6 +19,9 @@
     BaseModel.prototype.initialize = function(data) {
       this.updateAttributes(data);
       this._collections = [];
+      this._listeners = {};
+      this._listenerCount = 1;
+
     }
 
     BaseModel.prototype.updateAttributes = function(data) {
@@ -165,6 +168,34 @@
         this.removeFromCollections();
       }
 
+    }
+
+
+    BaseModel.prototype.on = function(event, callback) {
+      this._listenerCount += 1;
+      var newListener = {
+        listenerId: this._listenerCount,
+        callback: callback,
+        once: false
+      }
+      if (!this._listeners[event]) {
+        this._listeners[event] = [];
+      }
+      this._listeners[event].push(new);
+
+
+      return newListener.listenerId
+
+    }
+
+    BaseModel.prototype.removeListener = function(event, listenerId) {
+      if (typeof event === "string") {
+        if (listenerId) {
+          this._listeners[event].indexOf(listenerid);
+        } else {
+          delete this._listeners[event];
+        }
+      }
     }
 
 
