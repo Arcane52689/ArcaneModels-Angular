@@ -6,6 +6,7 @@
 
     var BaseModel = function(data) {
       this.initialize(data);
+      this.idIsOptional = false;
   }
 
 
@@ -60,7 +61,7 @@
 
 
     BaseModel.prototype.create = function(options) {
-      $http.post(this.url(), this.attributes).success(function(resp) {
+      $http.post(this.url(), this._toJSON()).success(function(resp) {
         this.updateAttributes(resp);
         options.success && options.success(resp);
       }.bind(this)).error(function(resp) {
@@ -69,7 +70,7 @@
     }
 
     BaseModel.prototype.update = function(options) {
-      $http.put(this.url(), this.attributes).success(function(resp) {
+      $http.put(this.url(), this._toJSON()).success(function(resp) {
         this.updateAttributes(resp);
         options.success && options.success(resp);
       }.bind(this)).error(function(resp) {
@@ -85,9 +86,32 @@
       this.attributes[key] = value;
     }
 
+    BaseModel.prototype._toJSON = function() {
+      var data, nameSpace;
+      if (this.toJSON) {
+        data = this.toJSON();
+      } else {
+        data = {}
+      }
+      if (data.nameSpace) {
+        nameSpace = data.nameSpace;
+        delete data.nameSpace;
+      }
+      for (key in this.attributes) {
+        if (!data.hasOwnProperty(key)) {
+          if (nameSpace) {
+            data[nameSpace][key] = this.attributes[key]
+          } else {
+            data[key] = this.attributes[key]
+          }
+        }
+      }
+      return data;
+    }
+
     BaseModel.prototype.fetch = function(options) {
       options = options || {};
-      if (this.id) {
+      if (this.id || this.idIsOptional) {
         $http.get(this.url()).success(function(resp) {
           this.updateAttributes(resp);
           options.success && options.success(resp);
@@ -100,14 +124,27 @@
 
     }
 
-    BaseModel.prototype.belongsTo = function(collection) {
-      this._collections.push(collection)
+    BaseModel.prototype.belongsTo = function(collection, cid) {
+      this._collections.push({
+        collection: collection,
+        cid: cid
+      })
       return this;
+    }
+
+    BaseModel.prototype.getCID = function(collection) {
+      var result
+      this._collections.forEach(function(c) {
+        if (c.collection === collection) {
+          result = c.cid
+        }
+      })
+      return result;
     }
 
     BaseModel.prototype.removeFromCollections = function() {
       this._collections.forEach(function(collection) {
-        collection.remove(this.id);
+        collection.collection.remove(collection.cid);
       }.bind(this));
       this._collections = [];
       return this;
@@ -154,14 +191,22 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     this.url = options.url;
     this.models = [];
     this.modelsById = {};
+    this.modelsByCID = {};
     this.comparator = options.comparator || 'id';
     this.reverse = options.reverse || false;
     this.perPage = options.perPage || 25;
+    this.searchOptions = options.searchOptions || {};
+    this.currentCID = 1;
+    this.isClone = false;
   }
 
   BaseCollection.prototype.fetch = function(options) {
+    this.beforeFetch && this.beforeFetch();
     options = options || {};
-    $http.get(this.url).success(function(resp) {
+    $http.get(this.url,{ params: this.searchOptions}).success(function(resp) {
+      if(options.clearModels) {
+        this.clearModels();
+      }
       this.addModels(resp);
       options.success && options.success(resp)
     }.bind(this)).error(function(resp) {
@@ -182,6 +227,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
   BaseCollection.prototype.addModel = function(data) {
     var model = new this.model(data);
     this.add(model);
+    return model;
   }
 
 
@@ -193,30 +239,49 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
       } else {
         this.modelsById[model.id] = model;
         this.models.push(model);
-        model.belongsTo(this)
+        if (!this.isClone) {
+          model.belongsTo(this, this.currentCID)
+        }
+        this.modelsByCID[this.currentCID] = model;
+        this.currentCID += 1;
       }
     } else {
       this.models.push(model)
-      model.belongsTo(this)
-
+      if (!this.isClone) {
+        model.belongsTo(this, this.currentCID)
+      }
+      this.modelsByCID[this.currentCID] = model;
+      this.currentCID += 1;
     }
     if (!this.adding) {
       this.sort();
     }
+    return model;
   }
 
 
-  BaseCollection.prototype.remove = function(id) {
-    if (typeof id === 'object') {
-      id = id.id
+  BaseCollection.prototype.remove = function(cid) {
+    var model
+    if (typeof cid === 'object') {
+      model = cid;
+    } else {
+      model = this.modelsByCID[cid];
     }
-    if ( this.modelsById[id]) {
-      delete this.modelsById[id];
-      var index = this.findIndex(id);
-      if (index >=0) {
-        this.models.splice(index, 1);
-      }
+    delete this.modelsByCID[cid];
+    var index = this.findIndex(cid);
+    if (index >=0) {
+      this.models.splice(index, 1);
     }
+    if ( model.id) {
+      delete this.modelsById[model.id];
+    }
+  }
+
+  BaseCollection.prototype.clearModels = function(id) {
+    this.models = [];
+    this.modelsById = {};
+    this.modelsByCID = {};
+    this.currentCID = 0
   }
   /* Sorting Functions */
 
@@ -226,14 +291,23 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
   }
 
 
+
+
   /* compare is a private function used to compare two models by the comparator */
   BaseCollection.prototype.compare = function(c1, c2) {
     var attribute1 = c1.get(this.comparator);
     var attribute2 = c2.get(this.comparator);
     if (typeof attribute1 === 'string') {
-      attribute1 = attribute1.toLowerCase();
-      attribute2 = attribute2.toLowerCase();
+      attribute1 = (typeof attribute1 === 'undefined') ? 'zzzz': attribute1.toLowerCase();
+      attribute2 = (typeof attribute2 === 'undefined') ? 'zzzz': attribute2.toLowerCase();
     }
+    if (typeof attribute1 === 'undefined') {
+      attribute1 = 100000
+    }
+    if (typeof attribute2 === 'undefined') {
+      attribute2 = 100000
+    }
+
     if (attribute1 < attribute2) {
       return (!this.reverse) ? -1 : 1;
     } else if ( attribute1 === attribute2) {
@@ -244,7 +318,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
   }
 
   BaseCollection.prototype.sort = function(callback) {
-    console.log('sorting')
     callback = callback || this.compare.bind(this);
     this.models.sort(callback);
     return this;
@@ -260,24 +333,42 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     return this.modelsById[id];
   }
 
-  BaseCollection.prototype.findIndex = function(id) {
+  BaseCollection.prototype.findOrFetch = function(id) {
+    var model = this.find(id);
+    if (!model) {
+      model = new this.model({id: id})
+    }
+    model.fetch();
+    return model;
+  }
+
+  BaseCollection.prototype.findIndex = function(cid) {
     var index = -1
     this.models.forEach(function(model, idx) {
-      if (model.id === id) {
+      if (model.getCID(this) === cid) {
         index = idx;
       }
-    })
+    }.bind(this))
     return index;
   }
 /*  subset functions */
 
-  BaseCollection.prototype.where = function(callback) {
-    var result = new this.constructor({
+  BaseCollection.prototype.emptyClone = function() {
+    var dup = new this.constructor({
       model: this.model,
-      url: undefined,
+      url: this.url,
       comparator: this.comparator,
-      reverse: this.reverse
-    })
+      reverse: this.reverse,
+      perPage: this.perPage,
+      searchOptions: this.searchOptions
+    });
+    dup.isClone = true;
+    return dup;
+  }
+
+
+  BaseCollection.prototype.where = function(callback) {
+    var result = this.emptyClone();
     result.adding = true
     this.models.forEach(function(model) {
       if (callback(model)) {
@@ -380,17 +471,16 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
   }
 
 
+
+
   BaseCollection.prototype.getPage = function(pageNumber) {
-    return this.models.slice(this.getStartIndex(pageNumber), this.perPage);
+    return this.models.slice(this.getStartIndex(pageNumber), this.getStartIndex(pageNumber) + this.perPage);
   }
-
-
-
-
 
 
   return BaseCollection;
 
 }])
 
-}())
+
+}());
