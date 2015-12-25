@@ -17,10 +17,10 @@
     }
 
     BaseModel.prototype.initialize = function(data) {
-      this.updateAttributes(data);
       this._collections = [];
       this._listeners = {};
       this._listenerCount = 1;
+      this.updateAttributes(data);
 
     }
 
@@ -35,6 +35,7 @@
       if (typeof data.id !=='undefined') {
         this.id = data.id;
       }
+      this.trigger("sync")
     }
 
     BaseModel.prototype.isNew = function() {
@@ -55,6 +56,7 @@
 
     BaseModel.prototype.save = function(options) {
       options = options || {};
+      this.trigger("save");
       if (this.isNew()) {
         this.create(options);
       } else {
@@ -114,6 +116,7 @@
 
     BaseModel.prototype.fetch = function(options) {
       options = options || {};
+      this.trigger("fetch")
       if (this.id || this.idIsOptional) {
         $http.get(this.url()).success(function(resp) {
           this.updateAttributes(resp);
@@ -176,24 +179,94 @@
       var newListener = {
         listenerId: this._listenerCount,
         callback: callback,
+        event: event,
         once: false
       }
       if (!this._listeners[event]) {
         this._listeners[event] = [];
       }
-      this._listeners[event].push(new);
+      // this._listeners[event].push(newListener);
+      this._listeners[event].push(newListener);
 
 
       return newListener.listenerId
 
     }
 
-    BaseModel.prototype.removeListener = function(event, listenerId) {
+
+    BaseModel.prototype.one = function(event, callback) {
+      this._listenerCount += 1;
+      var newListener = {
+        listenerId: this._listenerCount,
+        callback: callback,
+        event: event,
+        once: true
+      };
+      if (!this._listeners[event]) {
+        this._listeners[event] = [];
+      };
+      this._listeners[event].push(newListener);
+
+
+      return newListener.listenerId
+
+    }
+
+    BaseModel.prototype.trigger = function(event) {
+      this.callListeners(event);
+    }
+
+    BaseModel.prototype.callListeners = function(event) {
+      var toRemove = [];
+      var toRemoveAll = [];
+      if (this._listeners[event]) {
+        this._listeners[event].forEach(function(obj) {
+          obj.callback && obj.callback();
+          if (obj.once) {
+            toRemove.push(obj.listenerId);
+          }
+        })
+      }
+      if (this._listeners["all"]) {
+        this._listeners["all"].forEach(function(obj) {
+          obj.callback && obj.callback();
+          if (obj.once) {
+            toRemoveAll.push(obj.listenerId);
+          }
+        })
+      }
+
+      // toRemove.forEach(function(id) {
+      //   this.stopListening(event, id);
+      // }.bind(this));
+      // toRemoveAll.forEach(function(id) {
+      //   this.stopListening("all", id);
+      // }.bind(this));
+    }
+
+    BaseModel.prototype.stopListening = function(event, listenerId) {
       if (typeof event === "string") {
         if (listenerId) {
-          this._listeners[event].indexOf(listenerid);
+          index = this._listeners[event].indexOf(listenerid);
+          this._listeners[event].splice(index, 1);
         } else {
           delete this._listeners[event];
+        }
+      } else {
+        listenerId = event;
+        var result = this.findEventByListenerId(listenerId);
+        this._listeners[result.key].splice(result.index, 1);
+      }
+    }
+
+    BaseModel.prototype.findEventByListenerId = function(id) {
+      for (key in this._listeners) {
+        if (this._listeners.hasOwnProperty(key)) {
+          for (var i = 0; i < this._listeners[key]; i++) {
+            if (this._listeners[key][i].listenerId === id) {
+              return {key: key, index: index};
+            }
+          }
         }
       }
     }
@@ -229,21 +302,27 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     this.searchOptions = options.searchOptions || {};
     this.currentCID = 1;
     this.isClone = false;
+    this._listeners = {};
+    this._listenerCount = 1;
+
   }
 
   BaseCollection.prototype.fetch = function(options) {
     this.beforeFetch && this.beforeFetch();
+    this.trigger("fetch")
     options = options || {};
     $http.get(this.url,{ params: this.searchOptions}).success(function(resp) {
       if(options.clearModels) {
         this.clearModels();
       }
       this.addModels(resp);
+      this.trigger('sync');
       options.success && options.success(resp)
     }.bind(this)).error(function(resp) {
       console.error(resp);
+      this.trigger("error");
       options.error && options.error(resp);
-    })
+    }.bind(this))
   }
 
   /* adding functions */
@@ -287,6 +366,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     if (!this.adding) {
       this.sort();
     }
+    this.trigger("add")
     return model;
   }
 
@@ -306,6 +386,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     if ( model.id) {
       delete this.modelsById[model.id];
     }
+    this.trigger("remove")
   }
 
   BaseCollection.prototype.clearModels = function(id) {
@@ -318,6 +399,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
 
   BaseCollection.prototype.reverseOrder = function() {
     this.reverse = this.reverse ? false : true;
+    this.sort();
     return this;
   }
 
@@ -351,6 +433,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
   BaseCollection.prototype.sort = function(callback) {
     callback = callback || this.compare.bind(this);
     this.models.sort(callback);
+    this.trigger("sort")
     return this;
   }
 
@@ -507,6 +590,104 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
   BaseCollection.prototype.getPage = function(pageNumber) {
     return this.models.slice(this.getStartIndex(pageNumber), this.getStartIndex(pageNumber) + this.perPage);
   }
+
+
+
+  BaseCollection.prototype.on = function(event, callback) {
+    this._listenerCount += 1;
+    var newListener = {
+      listenerId: this._listenerCount,
+      callback: callback,
+      event: event,
+      once: false
+    }
+    if (!this._listeners[event]) {
+      this._listeners[event] = [];
+    }
+    this._listeners[event].push(newListener);
+
+
+    return newListener.listenerId
+
+  }
+
+  BaseCollection.prototype.one = function(event, callback) {
+    this._listenerCount += 1;
+    var newListener = {
+      listenerId: this._listenerCount,
+      callback: callback,
+      event: event,
+      once: true
+    }
+    if (!this._listeners[event]) {
+      this._listeners[event] = [];
+    }
+    this._listeners[event].push(newListener);
+
+
+    return newListener.listenerId
+
+  }
+
+  BaseCollection.prototype.trigger = function(event) {
+    this.callListeners(event);
+  }
+
+  BaseCollection.prototype.callListeners = function(event) {
+    var toRemove = [];
+    var toRemoveAll = [];
+    if (this._listeners[event]) {
+      this._listeners[event].forEach(function(obj) {
+        obj.callback && obj.callback();
+        if (obj.once) {
+          toRemove.push(obj.listenerId);
+        }
+      })
+    }
+    if (this._listeners["all"]) {
+      this._listeners["all"].forEach(function(obj) {
+        obj.callback && obj.callback();
+        if (obj.once) {
+          toRemoveAll.push(obj.listenerId);
+        }
+      })
+    }
+    toRemove.forEach(function(id) {
+      this.stopListening(event, id);
+    }.bind(this));
+    toRemoveAll.forEach(function(id) {
+      this.stopListening("all", id);
+    }.bind(this));
+  }
+
+  BaseCollection.prototype.stopListening = function(event, listenerId) {
+    if (typeof event === "string") {
+      if (listenerId) {
+        index = this._listeners[event].indexOf(listenerid);
+        this._listeners[event].splice(index, 1);
+      } else {
+        delete this._listeners[event];
+      }
+    } else {
+      listenerId = event;
+      var result = this.findEventByListenerId(listenerId);
+      this._listeners[result.key].splice(result.index, 1);
+    }
+  }
+
+  BaseCollection.prototype.findEventByListenerId = function(id) {
+    for (key in this._listeners) {
+      if (this._listeners.hasOwnProperty(key)) {
+        for (var i = 0; i < this._listeners[key]; i++) {
+          if (this._listeners[key][i].listenerId === id) {
+            return {key: key, index: index};
+          }
+        }
+      }
+    }
+  }
+
+
 
 
   return BaseCollection;
