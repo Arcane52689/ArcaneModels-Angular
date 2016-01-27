@@ -221,7 +221,9 @@
       var toRemoveAll = [];
       if (this._listeners[event]) {
         this._listeners[event].forEach(function(obj) {
-          obj.callback && obj.callback();
+          if (obj.callback) {
+            setTimeout(obj.callback)
+          }
           if (obj.once) {
             toRemove.push(obj.listenerId);
           }
@@ -229,7 +231,9 @@
       }
       if (this._listeners["all"]) {
         this._listeners["all"].forEach(function(obj) {
-          obj.callback && obj.callback();
+          if (obj.callback) {
+            setTimeout(obj.callback)
+          }
           if (obj.once) {
             toRemoveAll.push(obj.listenerId);
           }
@@ -327,22 +331,30 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
 
   /* adding functions */
 
-  BaseCollection.prototype.addModels = function(dataArr) {
+  BaseCollection.prototype.addModels = function(dataArr, options) {
     this.adding = true;
-    dataArr.forEach(this.addModel.bind(this));
-    this.adding = false
+    dataArr.forEach(function(data) {
+      this.addModel(data, {silent: true});
+    }.bind(this));
+    this.adding = false;
+    if ((!options) || (options && !options.silent)) {
+      this.trigger("add")
+    }
     this.sort();
   }
 
-  BaseCollection.prototype.addModel = function(data) {
+  BaseCollection.prototype.addModel = function(data, options) {
     var model = new this.model(data);
-    this.add(model);
+    this.add(model, {silent: true});
+    if ((!options) || (options && !options.silent)) {
+      this.trigger("add")
+    }
     return model;
   }
 
 
 
-  BaseCollection.prototype.add = function(model) {
+  BaseCollection.prototype.add = function(model, options) {
     if (model.id) {
       if (this.modelsById[model.id]) {
         this.modelsById[model.id].updateAttributes(model.attributes);
@@ -366,13 +378,16 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     if (!this.adding) {
       this.sort();
     }
-    this.trigger("add")
+    if ((!options) || (options && !options.silent)) {
+      this.trigger("add")
+    }
     return model;
   }
 
 
-  BaseCollection.prototype.remove = function(cid) {
+  BaseCollection.prototype.remove = function(cid, options) {
     var model
+    options = options || {}
     if (typeof cid === 'object') {
       model = cid;
     } else {
@@ -386,7 +401,9 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     if ( model.id) {
       delete this.modelsById[model.id];
     }
-    this.trigger("remove")
+    if (!options.silent) {
+      this.trigger("remove")
+    }
   }
 
   BaseCollection.prototype.clearModels = function(id) {
@@ -638,7 +655,9 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     var toRemoveAll = [];
     if (this._listeners[event]) {
       this._listeners[event].forEach(function(obj) {
-        obj.callback && obj.callback();
+        if (obj.callback) {
+          setTimeout(obj.callback)
+        }
         if (obj.once) {
           toRemove.push(obj.listenerId);
         }
@@ -646,7 +665,9 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     }
     if (this._listeners["all"]) {
       this._listeners["all"].forEach(function(obj) {
-        obj.callback && obj.callback();
+        if (obj.callback) {
+          setTimeout(obj.callback)
+        }
         if (obj.once) {
           toRemoveAll.push(obj.listenerId);
         }
