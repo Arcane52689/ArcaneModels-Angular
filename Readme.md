@@ -1,5 +1,5 @@
-#AngularModelFactory
-This is a lightweight model and collection system I created to emulate some of the functionality found in backbone. To keep the system lightweight, no additional frameworks/scripts were included(meaning no underscore.js)
+#ArcaneModels-Angular
+This is a lightweight model and collection system I created to emulate some of the functionality found in backbone. Currently, it is only designed to work in angular. To keep the system lightweight, no additional frameworks/scripts were included(meaning no underscore.js)
 
 
 ## Setup
@@ -37,6 +37,9 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
 + **url**() : returns the appropriate url depending on whether or not the model has an id.
 + **save**(options) : attempts to create or update the model in the database depending on the result of the isNew method. Takes an options object with a success callback and an error callback
 + **destroy**(options) : issues a delete request to the url given _url_. If successful, it then removes itself from all collections
++ **trigger**(event) : calls all callbacks for the specified event.
++ **on**(event, callback) : stores a callback to be called the next time the event is triggered.
++ **one**(event, callback) : the same as _.on_ except that it the callback is removed after the first time it's called
 
 
 ## Collections
@@ -89,3 +92,6 @@ To bind the attributes to an input, you can't use the get or set methods. Instea
 + **where**(callback) : takes a callback that should return either true or false as a parameter and returns a duplicated collection containing only models that returned true.
 + **all**() : returns an array containing all models
 + **first**(n || ) : takes an integer, n, and returns the first n models. If n isn't present, it will just return the first model.
++ **trigger**(event) : calls all callbacks for the specified event.
++ **on**(event, callback) : stores a callback to be called the next time the event is triggered.
++ **one**(event, callback) : the same as _.on_ except that it the callback is removed after the first time it's called
