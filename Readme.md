@@ -3,7 +3,14 @@ This is a lightweight model and collection system I created to emulate some of t
 
 
 ## Setup
-To include this in your project, first you need to inject 'AngularModelFactory' into your main project.
+To include this in your project, first you need to inject 'AngularModelFactory' into your main project, like so:
+
+```
+angular.module("MyApp", ['AngularModelFactory'])
+```
+
+
+
 
 
 ## Models
