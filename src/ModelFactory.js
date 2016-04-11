@@ -6,7 +6,6 @@
 
     var BaseModel = function(data) {
       this.initialize(data);
-      this.idIsOptional = false;
   }
 
 
@@ -116,17 +115,15 @@
 
     BaseModel.prototype.fetch = function(options) {
       options = options || {};
+      this.beforeFetch && this.beforeFetch();
       this.trigger("fetch")
-      if (this.id || this.idIsOptional) {
-        $http.get(this.url()).success(function(resp) {
-          this.updateAttributes(resp);
-          options.success && options.success(resp);
-        }.bind(this)).error(function(resp) {
-          options.error && options.error(resp);
-        })
-      } else {
-        console.error("Can't call fetch on an unsaved object")
-      }
+
+      $http.get(this.url()).success(function(resp) {
+        this.updateAttributes(resp);
+        options.success && options.success(resp);
+      }.bind(this)).error(function(resp) {
+        options.error && options.error(resp);
+      })
 
     }
 
