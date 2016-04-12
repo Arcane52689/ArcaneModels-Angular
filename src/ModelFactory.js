@@ -2,6 +2,7 @@
   var ModelFactory = angular.module('AngularModelFactory', [])
 
 
+
   ModelFactory.factory( 'BaseModel', ['$http', function($http) {
 
     var BaseModel = function(data) {
@@ -296,7 +297,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     this.url = options.url;
     this.models = [];
     this.modelsById = {};
-    this.modelsByCID = {};
     this.comparator = options.comparator || 'id';
     this.reverse = options.reverse || false;
     this.perPage = options.perPage || 25;
@@ -361,7 +361,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
         if (!this.isClone) {
           model.belongsTo(this, this.currentCID)
         }
-        this.modelsByCID[this.currentCID] = model;
         this.currentCID += 1;
       }
     } else {
@@ -369,7 +368,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
       if (!this.isClone) {
         model.belongsTo(this, this.currentCID)
       }
-      this.modelsByCID[this.currentCID] = model;
       this.currentCID += 1;
     }
     if (!this.adding) {
@@ -382,16 +380,33 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
   }
 
 
-  BaseCollection.prototype.remove = function(cid, options) {
+  BaseCollection.prototype.findByCID = function(cid) {
     var model
+    for (var idx = 0; idx < this.models.length; idx++) {
+      model = this.models[idx]
+      if (model.getCID(this) === cid) {
+        return {
+          model: model,
+          index: idx
+        }
+      }
+    }
+    return undefined;
+  }
+
+
+  BaseCollection.prototype.remove = function(cid, options) {
+    var model, index
     options = options || {}
     if (typeof cid === 'object') {
       model = cid;
+      index = this.findIndex(model);
+
     } else {
-      model = this.modelsByCID[cid];
+      var data = this.findByCID(cid);
+      model = data.model
+      index = data.index
     }
-    delete this.modelsByCID[cid];
-    var index = this.findIndex(cid);
     if (index >=0) {
       this.models.splice(index, 1);
     }
@@ -470,10 +485,10 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     return model;
   }
 
-  BaseCollection.prototype.findIndex = function(cid) {
+  BaseCollection.prototype.findIndex = function(model) {
     var index = -1
     this.models.forEach(function(model, idx) {
-      if (model.getCID(this) === cid) {
+      if (model.getCID(this) === model) {
         index = idx;
       }
     }.bind(this))
