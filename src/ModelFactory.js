@@ -700,7 +700,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
         }
       })
     }
-    if (this._listeners["all"]) {
+    if (this._listeners["all"] && event !== "all") {
       this._listeners["all"].forEach(function(obj) {
         if (obj.callback) {
           setTimeout(obj.callback)

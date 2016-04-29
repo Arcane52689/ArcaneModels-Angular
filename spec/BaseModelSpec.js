@@ -242,10 +242,38 @@ describe( "BaseModel", function() {
           expect(model._listenerCount).toBe(count + 1);
         })
 
+
         it("should take call use the callback function whenver 'trigger' is called", function(done) {
           var test1 ="unassigned"
           expect(test1).toBe("unassigned");
           model.on('test', function() {
+            test1 = 'assigned';
+            expect(test1).toBe('assigned');
+            done();
+          });
+          model.trigger('test');
+        })
+
+
+
+      })
+
+      describe('trigger()', function() {
+        it("should trigger the callback functions asynchrously", function(done) {
+          var test1 ="unassigned"
+          expect(test1).toBe("unassigned");
+          model.on('test', function() {
+            test1 = 'assigned';
+            done();
+          });
+          model.trigger('test');
+          expect(test1).toBe('unassigned');
+        })
+
+        it("on('all') should trigger whenever trigger is called", function(done) {
+          var test1 ="unassigned"
+          expect(test1).toBe("unassigned");
+          model.on('all', function() {
             test1 = 'assigned';
             expect(test1).toBe('assigned');
             done();
