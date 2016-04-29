@@ -228,5 +228,24 @@ describe( "BaseModel", function() {
     })
 
 
+    describe("Listening functions", function() {
+
+
+      describe(".on()", function() {
+
+
+        it("should increase the listener count to the object", function() {
+          var count = model._listenerCount
+          model.on('add', function() {
+            console.log('here')
+          })
+          expect(model._listenerCount).toBe(count + 1);
+        })
+      })
+
+
+
+    })
   })
+
 });

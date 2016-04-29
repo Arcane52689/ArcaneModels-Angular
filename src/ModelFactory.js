@@ -1,25 +1,59 @@
 ;(function() {
   var ModelFactory = angular.module('AngularModelFactory', [])
 
+  var Listenable = function() {
+
+  }
+
+  var inherits=  function(child, parent) {
+    var Surrogate = function() {};
+    Surrogate.prototype = parent.prototype;
+    child.prototype  = new Surrogate();
+  }
+
+  Listenable.prototype.initialize = function() {
+    this._listeners = {};
+    this._listenerCount = 1;
+  }
+
+  Listenable.prototype.on = function(event, callback) {
+    this._listenerCount += 1;
+    var newListener = {
+      listenerId: this._listenerCount,
+      callback: callback,
+      event: event,
+      once: false
+    }
+    if (!this._listeners[event]) {
+      this._listeners[event] = [];
+    }
+    this._listeners[event].push(newListener);
+
+
+    return newListener.listenerId
+
+  }
+
 
 
   ModelFactory.factory( 'BaseModel', ['$http', function($http) {
 
     var BaseModel = function(data) {
       this.initialize(data);
-  }
+    }
+
+    inherits(BaseModel, Listenable);
+
+
 
 
     BaseModel.parentOf =  function(child) {
-      var Surrogate = function() {};
-      Surrogate.prototype = BaseModel.prototype;
-      child.prototype  = new Surrogate();
+      inherits(child, BaseModel);
     }
 
     BaseModel.prototype.initialize = function(data) {
       this._collections = [];
-      this._listeners = {};
-      this._listenerCount = 1;
+      Listenable.prototype.initialize.call(this);
       this.updateAttributes(data);
 
     }
@@ -172,24 +206,23 @@
     }
 
 
-    BaseModel.prototype.on = function(event, callback) {
-      this._listenerCount += 1;
-      var newListener = {
-        listenerId: this._listenerCount,
-        callback: callback,
-        event: event,
-        once: false
-      }
-      if (!this._listeners[event]) {
-        this._listeners[event] = [];
-      }
-      // this._listeners[event].push(newListener);
-      this._listeners[event].push(newListener);
-
-
-      return newListener.listenerId
-
-    }
+    // BaseModel.prototype.on = function(event, callback) {
+    //   this._listenerCount += 1;
+    //   var newListener = {
+    //     listenerId: this._listenerCount,
+    //     callback: callback,
+    //     event: event,
+    //     once: false
+    //   }
+    //   if (!this._listeners[event]) {
+    //     this._listeners[event] = [];
+    //   }
+    //   this._listeners[event].push(newListener);
+    //
+    //
+    //   return newListener.listenerId
+    //
+    // }
 
 
     BaseModel.prototype.one = function(event, callback) {
@@ -237,13 +270,6 @@
           }
         })
       }
-
-      // toRemove.forEach(function(id) {
-      //   this.stopListening(event, id);
-      // }.bind(this));
-      // toRemoveAll.forEach(function(id) {
-      //   this.stopListening("all", id);
-      // }.bind(this));
     }
 
     BaseModel.prototype.stopListening = function(event, listenerId) {
@@ -303,8 +329,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
     this.searchOptions = options.searchOptions || {};
     this.currentCID = 1;
     this.isClone = false;
-    this._listeners = {};
-    this._listenerCount = 1;
+    Listenable.prototype.initialize.call(this);
 
   }
 
