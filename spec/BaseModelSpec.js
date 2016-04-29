@@ -259,7 +259,10 @@ describe( "BaseModel", function() {
       })
 
       describe('trigger()', function() {
+
+
         it("should trigger the callback functions asynchrously", function(done) {
+          var model = new BaseModel();
           var test1 ="unassigned"
           expect(test1).toBe("unassigned");
           model.on('test', function() {
@@ -271,6 +274,8 @@ describe( "BaseModel", function() {
         })
 
         it("on('all') should trigger whenever trigger is called", function(done) {
+          var model = new BaseModel();
+
           var test1 ="unassigned"
           expect(test1).toBe("unassigned");
           model.on('all', function() {
@@ -279,6 +284,20 @@ describe( "BaseModel", function() {
             done();
           });
           model.trigger('test');
+        })
+
+        it("on('all') should trigger callbacks once when trigger('all') is used", function(done) {
+          var test1 = 0;
+          var model = new BaseModel();
+
+          expect(test1).toBe(0);
+          model.on('all', function() {
+            test1 += 1;
+            console.log(test1);
+            expect(test1).toBe(1);
+            done();
+          });
+          model.trigger('all');
         })
       })
 

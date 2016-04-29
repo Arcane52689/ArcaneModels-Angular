@@ -2,7 +2,7 @@
   var ModelFactory = angular.module('AngularModelFactory', [])
 
   var Listenable = function() {
-
+    this.initialize();
   }
 
   var inherits=  function(child, parent) {
@@ -32,6 +32,10 @@
 
     return newListener.listenerId
 
+  }
+
+  Listenable.prototype.trigger = function(event) {
+    this.callListeners(event);
   }
 
 
@@ -243,9 +247,9 @@
 
     }
 
-    BaseModel.prototype.trigger = function(event) {
-      this.callListeners(event);
-    }
+    // BaseModel.prototype.trigger = function(event) {
+    //   this.callListeners(event);
+    // }
 
     BaseModel.prototype.callListeners = function(event) {
       var toRemove = [];
@@ -260,7 +264,7 @@
           }
         })
       }
-      if (this._listeners["all"]) {
+      if (this._listeners["all"] && event !== 'all') {
         this._listeners["all"].forEach(function(obj) {
           if (obj.callback) {
             setTimeout(obj.callback)
@@ -700,7 +704,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
         }
       })
     }
-    if (this._listeners["all"] && event !== "all") {
+    if ((this._listeners["all"]) && (event !== "all")) {
       this._listeners["all"].forEach(function(obj) {
         if (obj.callback) {
           setTimeout(obj.callback)
