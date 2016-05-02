@@ -37,7 +37,28 @@ describe("Listenable", function() {
     })
 
     describe(".one(even, callback)", function() {
+      var model, count;
+      beforeEach(function() {
+        model = new Listenable()
+      })
 
+      it("should increase the listener count", function() {
+        count = model._listenerCount;
+        model.one('test', function() { console.log('test')});
+        expect(model._listenerCount).toBe(count + 1);
+      })
+
+      it("should remove itself from the listeners after being called", function(done) {
+        count = 0;
+        model.one('test', function() {
+          count += 1;
+          expect(count).toBe(1);
+          done();
+        })
+        model.trigger('test');
+        model.trigger('test');
+
+      })
     })
 
 
