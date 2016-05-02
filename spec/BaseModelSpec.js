@@ -231,7 +231,7 @@ describe( "BaseModel", function() {
     describe("Listening functions", function() {
 
 
-      describe(".on()", function() {
+      describe(".on(event, callback)", function() {
 
 
         it("should increase the listener count to the object", function() {
@@ -243,7 +243,7 @@ describe( "BaseModel", function() {
         })
 
 
-        it("should take call use the callback function whenver 'trigger' is called", function(done) {
+        it("should take call use the callback function whenever 'trigger' is called", function(done) {
           var test1 ="unassigned"
           expect(test1).toBe("unassigned");
           model.on('test', function() {
@@ -258,7 +258,31 @@ describe( "BaseModel", function() {
 
       })
 
-      describe('trigger()', function() {
+      describe(".one(event, callback)", function() {
+        var model, count;
+        beforeEach(function() {
+          model = new BaseModel({})
+        })
+
+        it("should increase the listener count", function() {
+          count = model._listenerCount;
+          model.one('test', function() { console.log('test')});
+          expect(model._listenerCount).toBe(count + 1);
+        })
+
+        it("should remove itself from the listeners after being called", function(done) {
+          count = 0;
+          model.one('test', function() {
+            count += 1;
+            expect(count).toBe(1);
+            done();
+          })
+          model.trigger('test');
+          model.trigger('test');
+        })
+      })
+
+      describe('trigger(event)', function() {
 
 
         it("should trigger the callback functions asynchrously", function(done) {
@@ -300,6 +324,8 @@ describe( "BaseModel", function() {
           model.trigger('all');
         })
       })
+
+
 
 
 

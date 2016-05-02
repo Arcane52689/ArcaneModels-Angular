@@ -40,6 +40,9 @@
 
 
 
+
+
+
   ModelFactory.factory( 'BaseModel', ['$http', function($http) {
 
     var BaseModel = function(data) {
@@ -253,14 +256,13 @@
 
     BaseModel.prototype.callListeners = function(event) {
       var toRemove = [];
-      var toRemoveAll = [];
       if (this._listeners[event]) {
         this._listeners[event].forEach(function(obj) {
           if (obj.callback) {
             setTimeout(obj.callback)
           }
           if (obj.once) {
-            toRemove.push(obj.listenerId);
+            toRemove.push(obj);
           }
         })
       }
@@ -270,16 +272,20 @@
             setTimeout(obj.callback)
           }
           if (obj.once) {
-            toRemoveAll.push(obj.listenerId);
+            toRemove.push(obj);
           }
         })
       }
+      if (toRemove.length > 0) {debugger}
+      toRemove.forEach(function(obj) {
+        this.stopListening(obj.event, obj.listenerId);
+      }.bind(this))
     }
 
     BaseModel.prototype.stopListening = function(event, listenerId) {
       if (typeof event === "string") {
         if (listenerId) {
-          index = this._listeners[event].indexOf(listenerid);
+          index = this._listeners[event].indexOf(listenerId);
           this._listeners[event].splice(index, 1);
         } else {
           delete this._listeners[event];
