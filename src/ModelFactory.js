@@ -1,49 +1,129 @@
 ;(function() {
   var ModelFactory = angular.module('AngularModelFactory', [])
 
-  var Listenable = function() {
-    this.initialize();
-  }
-
   var inherits=  function(child, parent) {
     var Surrogate = function() {};
     Surrogate.prototype = parent.prototype;
     child.prototype  = new Surrogate();
   }
 
-  Listenable.prototype.initialize = function() {
-    this._listeners = {};
-    this._listenerCount = 1;
-  }
+  ModelFactory.factory('Listenable', [function() {
 
-  Listenable.prototype.on = function(event, callback) {
-    this._listenerCount += 1;
-    var newListener = {
-      listenerId: this._listenerCount,
-      callback: callback,
-      event: event,
-      once: false
+
+    var Listenable = function() {
+      this.initialize();
     }
-    if (!this._listeners[event]) {
-      this._listeners[event] = [];
+
+    Listenable.prototype.initialize = function() {
+      this._listeners = {};
+      this._listenerCount = 1;
     }
-    this._listeners[event].push(newListener);
+
+    Listenable.prototype.on = function(event, callback) {
+      this._listenerCount += 1;
+      var newListener = {
+        listenerId: this._listenerCount,
+        callback: callback,
+        event: event,
+        once: false
+      }
+      if (!this._listeners[event]) {
+        this._listeners[event] = [];
+      }
+      this._listeners[event].push(newListener);
 
 
-    return newListener.listenerId
+      return newListener.listenerId
 
-  }
+    }
 
-  Listenable.prototype.trigger = function(event) {
-    this.callListeners(event);
-  }
+    Listenable.prototype.one = function(event, callback) {
+      this._listenerCount += 1;
+      var newListener = {
+        listenerId: this._listenerCount,
+        callback: callback,
+        event: event,
+        once: true
+      };
+      if (!this._listeners[event]) {
+        this._listeners[event] = [];
+      };
+      this._listeners[event].push(newListener);
+
+
+      return newListener.listenerId
+
+    }
+
+
+    Listenable.prototype.trigger = function(event) {
+      this.callListeners(event);
+    }
+
+    Listenable.prototype.callListeners = function(event) {
+      var toRemove = [];
+      if (this._listeners[event]) {
+        this._listeners[event].forEach(function(obj) {
+          if (obj.callback) {
+            setTimeout(obj.callback)
+          }
+          if (obj.once) {
+            toRemove.push(obj);
+          }
+        })
+      }
+      if (this._listeners["all"] && event !== 'all') {
+        this._listeners["all"].forEach(function(obj) {
+          if (obj.callback) {
+            setTimeout(obj.callback)
+          }
+          if (obj.once) {
+            toRemove.push(obj);
+          }
+        })
+      }
+      if (toRemove.length > 0) {debugger}
+      toRemove.forEach(function(obj) {
+        this.stopListening(obj.event, obj.listenerId);
+      }.bind(this))
+    }
+
+    Listenable.prototype.stopListening = function(event, listenerId) {
+      if (typeof event === "string") {
+        if (listenerId) {
+          index = this._listeners[event].indexOf(listenerId);
+          this._listeners[event].splice(index, 1);
+        } else {
+          delete this._listeners[event];
+        }
+      } else {
+        listenerId = event;
+        var result = this.findEventByListenerId(listenerId);
+        this._listeners[result.key].splice(result.index, 1);
+      }
+    }
+
+    Listenable.prototype.findEventByListenerId = function(id) {
+      for (key in this._listeners) {
+        if (this._listeners.hasOwnProperty(key)) {
+          for (var i = 0; i < this._listeners[key]; i++) {
+            if (this._listeners[key][i].listenerId === id) {
+              return {key: key, index: index};
+            }
+          }
+        }
+      }
+    }
+
+    return Listenable;
+
+  }]);
 
 
 
 
 
-
-  ModelFactory.factory( 'BaseModel', ['$http', function($http) {
+  ModelFactory.factory( 'BaseModel', ['$http', 'Listenable', function($http, Listenable) {
 
     var BaseModel = function(data) {
       this.initialize(data);
@@ -316,7 +396,7 @@
 
 }])
 
-ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, BaseModel) {
+ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', function($http, BaseModel, Listenable) {
 
   var BaseCollection = function(options) {
     this.initialize(options);
@@ -764,3 +844,5 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel',function($http, Bas
 
 
 }());
+
+
