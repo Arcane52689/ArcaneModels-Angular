@@ -106,9 +106,10 @@
     Listenable.prototype.findEventByListenerId = function(id) {
       for (key in this._listeners) {
         if (this._listeners.hasOwnProperty(key)) {
-          for (var i = 0; i < this._listeners[key]; i++) {
+          debugger
+          for (var i = 0; i < this._listeners[key].length; i++) {
             if (this._listeners[key][i].listenerId === id) {
-              return {key: key, index: index};
+              return {key: key, index: i};
             }
           }
         }
@@ -742,7 +743,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
 
   return BaseCollection;
 
-}])
+}]);
 
 
 }());
