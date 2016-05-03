@@ -130,8 +130,7 @@ describe("Listenable", function() {
         var listenerId2 = model.on("add", function() {});
         var listenerId3 = model.on("test", function() {});
         var result = model.findEventByListenerId(listenerId1);
-        debugger;
-        expect(result.key).toBe('test');
+        expect(result.event).toBe('test');
         expect(result.index).toBe(0);
 
       })

@@ -214,7 +214,7 @@ describe('BaseCollection', function() {
 
       describe ('BaseCollection.prototype.findIndex', function() {
         // it("should find a model's position in the models array", function() {
-        //   debugger
+
         //   expect(collection.findIndex(18)).toBe(18);
         // })
 

@@ -7,7 +7,31 @@
     child.prototype  = new Surrogate();
   }
 
-  ModelFactory.factory('Listenable', [function() {
+  ModelFactory.factory('Listener', [function() {
+
+    var Listener = function(options) {
+      this.id = options.id;
+      this.callback = options.callback;
+      this.event = options.event;
+      this.once = options.once;
+    }
+
+    Listener.prototype.call = function() {
+      if (this.callback) {
+        setTimeout(this.callback);
+      }
+    }
+
+
+
+    return Listener;
+  }])
+
+
+
+
+
+  ModelFactory.factory('Listenable', ['Listener', function(Listener) {
 
 
     var Listenable = function() {
@@ -19,42 +43,43 @@
       this._listenerCount = 1;
     }
 
-    Listenable.prototype.on = function(event, callback) {
-      this._listenerCount += 1;
-      var newListener = {
-        listenerId: this._listenerCount,
+    Listenable.prototype._createListener = function(event, callback, once) {
+      var listener = new Listener({
+        id: this._listenerCount,
         callback: callback,
         event: event,
-        once: false
-      }
+        once: once
+      });
+      return listener;
+    }
+
+    Listenable.prototype.getListeners = function(event) {
       if (!this._listeners[event]) {
         this._listeners[event] = [];
       }
-      this._listeners[event].push(newListener);
+      return this._listeners[event];
+    }
+
+    Listenable.prototype.on = function(event, callback) {
+      this._listenerCount += 1;
+      var newListener = this._createListener(event, callback, false);
+
+      this.getListeners(event).push(newListener);
 
 
-      return newListener.listenerId
+      return newListener.id;
 
     }
 
     Listenable.prototype.one = function(event, callback) {
       this._listenerCount += 1;
-      var newListener = {
-        listenerId: this._listenerCount,
-        callback: callback,
-        event: event,
-        once: true
-      };
-      if (!this._listeners[event]) {
-        this._listeners[event] = [];
-      };
-      this._listeners[event].push(newListener);
+      var newListener = this._createListener(event, callback, true);
+      this.getListeners(event).push(newListener);
 
 
-      return newListener.listenerId
+      return newListener.id
 
     }
-
 
     Listenable.prototype.trigger = function(event) {
       this.callListeners(event);
@@ -63,35 +88,32 @@
     Listenable.prototype.callListeners = function(event) {
       var toRemove = [];
       if (this._listeners[event]) {
-        this._listeners[event].forEach(function(obj) {
-          if (obj.callback) {
-            setTimeout(obj.callback)
-          }
-          if (obj.once) {
-            toRemove.push(obj);
+        this.getListeners(event).forEach(function(listener) {
+          listener.call();
+          if (listener.once) {
+            toRemove.push(listener);
           }
         })
       }
       if (this._listeners["all"] && event !== 'all') {
-        this._listeners["all"].forEach(function(obj) {
-          if (obj.callback) {
-            setTimeout(obj.callback)
+        this._listeners["all"].forEach(function(listener) {
+          if (listener.callback) {
+            setTimeout(listener.callback)
           }
-          if (obj.once) {
-            toRemove.push(obj);
+          if (listener.once) {
+            toRemove.push(listener);
           }
         })
       }
-      if (toRemove.length > 0) {debugger}
-      toRemove.forEach(function(obj) {
-        this.stopListening(obj.event, obj.listenerId);
+      toRemove.forEach(function(listener) {
+        this.stopListening(listener.event, listener.id);
       }.bind(this))
     }
 
     Listenable.prototype.stopListening = function(event, listenerId) {
       if (typeof event === "string") {
         if (listenerId) {
-          index = this._listeners[event].indexOf(listenerId);
+          index = this.findListenerByEventAndId(event, listenerId);
           this._listeners[event].splice(index, 1);
         } else {
           delete this._listeners[event];
@@ -99,22 +121,32 @@
       } else {
         listenerId = event;
         var result = this.findEventByListenerId(listenerId);
-        this._listeners[result.key].splice(result.index, 1);
+
+        this._listeners[result.event].splice(result.index, 1);
       }
     }
 
+    Listenable.prototype.findListenerByEventAndId = function(event, id) {
+      for (var idx = 0; idx < this.getListeners(event).length; idx++) {
+        if (this.getListeners(event)[idx].id === id) {
+          return idx;
+        }
+      }
+      return -1;
+    }
+
     Listenable.prototype.findEventByListenerId = function(id) {
-      for (key in this._listeners) {
-        if (this._listeners.hasOwnProperty(key)) {
-          debugger
-          for (var i = 0; i < this._listeners[key].length; i++) {
-            if (this._listeners[key][i].listenerId === id) {
-              return {key: key, index: i};
-            }
+      var idx;
+      for (event in this._listeners) {
+        if (this._listeners.hasOwnProperty(event)) {
+          idx = this.findListenerByEventAndId(event, id);
+          if (idx > -1){
+            return {event: event, index: idx};
           }
         }
       }
     }
+
 
     return Listenable;
 
