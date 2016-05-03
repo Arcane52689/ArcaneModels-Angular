@@ -456,8 +456,8 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
 
     } else {
       var data = this.findByCID(cid);
-      model = data.model
-      index = data.index
+      model = data.model;
+      index = data.index;
     }
     if (index >=0) {
       this.models.splice(index, 1);
@@ -474,7 +474,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     this.models = [];
     this.modelsById = {};
     this.modelsByCID = {};
-    this.currentCID = 0
+    this.currentCID = 0;
   }
   /* Sorting Functions */
 
@@ -484,11 +484,8 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     return this;
   }
 
-
-
-
-  /* compare is a private function used to compare two models by the comparator */
   BaseCollection.prototype.compare = function(c1, c2) {
+  /* compare is a private function used to compare two models by the comparator */
     var attribute1 = c1.get(this.comparator);
     var attribute2 = c2.get(this.comparator);
     if (typeof attribute1 === 'string') {
@@ -496,12 +493,11 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
       attribute2 = (typeof attribute2 === 'undefined') ? 'zzzz': attribute2.toLowerCase();
     }
     if (typeof attribute1 === 'undefined') {
-      attribute1 = 100000
+      attribute1 = Infinity;
     }
     if (typeof attribute2 === 'undefined') {
-      attribute2 = 100000
+      attribute2 = Infinity;
     }
-
     if (attribute1 < attribute2) {
       return (!this.reverse) ? -1 : 1;
     } else if ( attribute1 === attribute2) {
@@ -518,11 +514,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     return this;
   }
 
-
-
 /* search function */
-
-
 
   BaseCollection.prototype.find = function(id) {
     return this.modelsById[id];
@@ -546,6 +538,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     }.bind(this))
     return index;
   }
+
 /*  subset functions */
 
   BaseCollection.prototype.emptyClone = function() {
@@ -561,7 +554,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     dup.isClone = true;
     return dup;
   }
-
 
   BaseCollection.prototype.where = function(callback) {
     var result = this.emptyClone();
@@ -579,8 +571,9 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
   BaseCollection.prototype.all = function() {
     return this.models;
   }
-  // returns the first n items in the collection. if no number is passed, it returns the first item
+
   BaseCollection.prototype.first = function(n) {
+    // returns the first n items in the collection. if no number is passed, it returns the first item
     n = n || 1;
     if (n=== 1) {
       return this.models[0]
@@ -590,6 +583,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
   }
 
 /* information functions */
+
   BaseCollection.prototype.any = function(callback) {
     var model
     callback = callback || function() { return true };
@@ -615,7 +609,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     return true;
   }
 
-
   BaseCollection.prototype.count = function(callback) {
     callback = callback || function() { return true };
     var count = 0;
@@ -627,11 +620,9 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     return count;
   }
 
-
   BaseCollection.prototype.empty = function() {
     return (this.models.length === 0);
   }
-
 
 /* iteration function */
 
@@ -644,7 +635,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     return this;
   }
 
-
   BaseCollection.prototype.map = function(callback) {
     var model, result, results, i;
     results = [];
@@ -656,7 +646,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     return results;
   }
 
-
   /* pagination */
 
   BaseCollection.prototype.pages = function() {
@@ -666,9 +655,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
   BaseCollection.prototype.getStartIndex = function(page) {
     return this.perPage * (page - 1);
   }
-
-
-
 
   BaseCollection.prototype.getPage = function(pageNumber) {
     return this.models.slice(this.getStartIndex(pageNumber), this.getStartIndex(pageNumber) + this.perPage);
