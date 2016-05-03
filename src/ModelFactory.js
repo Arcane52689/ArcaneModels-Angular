@@ -164,7 +164,7 @@
 
     inherits(BaseModel, Listenable);
 
-
+    BaseModel.prototype.constructor = BaseModel;
 
 
     BaseModel.parentOf =  function(child) {
@@ -336,12 +336,14 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
   var BaseCollection = function(options) {
     this.initialize(options);
   }
+  inherits(BaseCollection, Listenable);
+
 
   BaseCollection.parentOf =  function(child) {
-    var Surrogate = function() {};
-    Surrogate.prototype = BaseCollection.prototype;
-    child.prototype  = new Surrogate();
+    inherits(child, BaseCollection);
   }
+
+  BaseCollection.prototype.constructor = BaseCollection;
 
   BaseCollection.prototype.initialize = function(options) {
     this.model = options.model || BaseModel;
@@ -547,6 +549,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
 /*  subset functions */
 
   BaseCollection.prototype.emptyClone = function() {
+
     var dup = new this.constructor({
       model: this.model,
       url: this.url,
@@ -562,7 +565,8 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
 
   BaseCollection.prototype.where = function(callback) {
     var result = this.emptyClone();
-    result.adding = true
+    result.adding = true;
+    debugger;
     this.models.forEach(function(model) {
       if (callback(model)) {
         result.add(model);
@@ -669,108 +673,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
   BaseCollection.prototype.getPage = function(pageNumber) {
     return this.models.slice(this.getStartIndex(pageNumber), this.getStartIndex(pageNumber) + this.perPage);
   }
-
-
-
-  BaseCollection.prototype.on = function(event, callback) {
-    this._listenerCount += 1;
-    var newListener = {
-      listenerId: this._listenerCount,
-      callback: callback,
-      event: event,
-      once: false
-    }
-    if (!this._listeners[event]) {
-      this._listeners[event] = [];
-    }
-    this._listeners[event].push(newListener);
-
-
-    return newListener.listenerId
-
-  }
-
-  BaseCollection.prototype.one = function(event, callback) {
-    this._listenerCount += 1;
-    var newListener = {
-      listenerId: this._listenerCount,
-      callback: callback,
-      event: event,
-      once: true
-    }
-    if (!this._listeners[event]) {
-      this._listeners[event] = [];
-    }
-    this._listeners[event].push(newListener);
-
-
-    return newListener.listenerId
-
-  }
-
-  BaseCollection.prototype.trigger = function(event) {
-    this.callListeners(event);
-  }
-
-  BaseCollection.prototype.callListeners = function(event) {
-    var toRemove = [];
-    var toRemoveAll = [];
-    if (this._listeners[event]) {
-      this._listeners[event].forEach(function(obj) {
-        if (obj.callback) {
-          setTimeout(obj.callback)
-        }
-        if (obj.once) {
-          toRemove.push(obj.listenerId);
-        }
-      })
-    }
-    if ((this._listeners["all"]) && (event !== "all")) {
-      this._listeners["all"].forEach(function(obj) {
-        if (obj.callback) {
-          setTimeout(obj.callback)
-        }
-        if (obj.once) {
-          toRemoveAll.push(obj.listenerId);
-        }
-      })
-    }
-    toRemove.forEach(function(id) {
-      this.stopListening(event, id);
-    }.bind(this));
-    toRemoveAll.forEach(function(id) {
-      this.stopListening("all", id);
-    }.bind(this));
-  }
-
-  BaseCollection.prototype.stopListening = function(event, listenerId) {
-    if (typeof event === "string") {
-      if (listenerId) {
-        index = this._listeners[event].indexOf(listenerid);
-        this._listeners[event].splice(index, 1);
-      } else {
-        delete this._listeners[event];
-      }
-    } else {
-      listenerId = event;
-      var result = this.findEventByListenerId(listenerId);
-      this._listeners[result.key].splice(result.index, 1);
-    }
-  }
-
-  BaseCollection.prototype.findEventByListenerId = function(id) {
-    for (key in this._listeners) {
-      if (this._listeners.hasOwnProperty(key)) {
-        for (var i = 0; i < this._listeners[key]; i++) {
-          if (this._listeners[key][i].listenerId === id) {
-            return {key: key, index: index};
-          }
-        }
-      }
-    }
-  }
-
-
 
 
   return BaseCollection;
