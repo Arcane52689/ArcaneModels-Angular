@@ -475,6 +475,7 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     this.modelsById = {};
     this.modelsByCID = {};
     this.currentCID = 0;
+    this.trigger('remove');
   }
   /* Sorting Functions */
 
@@ -507,10 +508,12 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
     }
   }
 
-  BaseCollection.prototype.sort = function(callback) {
+  BaseCollection.prototype.sort = function(callback, options) {
     callback = callback || this.compare.bind(this);
     this.models.sort(callback);
-    this.trigger("sort")
+    if (!option.silent) {
+      this.trigger("sort");
+    }
     return this;
   }
 

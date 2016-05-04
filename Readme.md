@@ -11,6 +11,14 @@ angular.module("MyApp", ['AngularModelFactory'])
 
 
 
+## Listenable
+Both BaseCollection and BaseModel inherit from the Listenable class. This allows them to create Listeners, with _.on()_ and _.one()_, which take an event and a callback.
+
+### Methods
++ **.on**(string, callback): Takes an string(event) and a callback function and creates a listener to be called the next time the event is triggered. Returns the listener id
++ **.one**(string, callback): Does the same as _.on_, but after being called once, it removes itself. Returns the listener id
++ **.trigger**(string): Calls all listeners waiting for the specified string
++ **stopListening**(event, id): Takes a string, an integer, or both. If only a string is passed, it will remove all listeners for that string. If an integer is passed, it will attempt to find the specified Listener and remove it. If both are passed, it will still find the specified listener, but will be faster.
 
 
 ## Models
@@ -32,6 +40,9 @@ app.factory('NewModel', ['BaseModel', function(BaseModel) {
 Where NewModel is the name of the model and urlBase is the portion of the url, minus the id.  For non-RESTful API's, the prototype.url() function can be overwritten. It is very important to call this.initialize(data). This is function that parses the data into attributes.  
 
 To bind the attributes to an input, you can't use the get or set methods. Instead, you must directly access the attribute, using _model.attributes.propertyName_
+
+
+
 
 ### Methods
 
