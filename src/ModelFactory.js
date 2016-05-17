@@ -195,21 +195,18 @@
     }
 
 
-    BaseModel.prototype.create = function(options) {
-      $http.post(this.url(), this._toJSON()).success(function(resp) {
-        this.updateAttributes(resp);
-        options.success && options.success(resp);
-      }.bind(this)).error(function(resp) {
-        options.error && options.error(resp);
-      })
-    }
 
-    BaseModel.prototype.update = function(options) {
-      $http.put(this.url(), this._toJSON()).success(function(resp) {
-        this.updateAttributes(resp);
-        options.success && options.success(resp);
-      }.bind(this)).error(function(resp) {
-        options.error && options.error(resp)
+    BaseModel.prototype.upload = function(options) {
+      $.ajax(this.url() {
+        method: this.isNew() ? "POST" : "PUT",
+        data: this._toJSON(),
+        success: function(resp) {
+          this.updateAttributes(resp);
+          options.success && options.success(resp);
+        }.bind(this),
+        error: function(resp) {
+          options.error && options.error(resp);
+        }
       })
     }
 
