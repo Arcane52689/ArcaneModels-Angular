@@ -244,15 +244,18 @@
     BaseModel.prototype.fetch = function(options) {
       options = options || {};
       this.beforeFetch && this.beforeFetch();
-      this.trigger("fetch")
+      this.trigger("fetch");
 
-      $http.get(this.url()).success(function(resp) {
+      $.ajax(this.url(), {
+        method: "get",
+        data: options.data,
+        success: function(resp) {
         this.updateAttributes(resp);
         options.success && options.success(resp);
-      }.bind(this)).error(function(resp) {
+      }.bind(this),
+      error: function(resp) {
         options.error && options.error(resp);
-      })
-
+      }.bind(this);
     }
 
     BaseModel.prototype.belongsTo = function(collection, cid) {
@@ -329,20 +332,24 @@
 
   BaseCollection.prototype.fetch = function(options) {
     this.beforeFetch && this.beforeFetch();
-    this.trigger("fetch")
+    this.trigger("fetch");
     options = options || {};
-    $http.get(this.url,{ params: this.searchOptions}).success(function(resp) {
+    $.ajax(this.url,{
+      method: "GET",
+      data:{ params: this.searchOptions}
+      success :function(resp) {
       if(options.clearModels) {
         this.clearModels();
       }
       this.addModels(resp);
       this.trigger('sync');
       options.success && options.success(resp)
-    }.bind(this)).error(function(resp) {
+    }.bind(this),
+    error: function(resp) {
       console.error(resp);
       this.trigger("error");
       options.error && options.error(resp);
-    }.bind(this))
+    }.bind(this)
   }
 
   /* adding functions */
