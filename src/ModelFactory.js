@@ -1,5 +1,5 @@
 ;(function() {
-  var ModelFactory = angular.module('AngularModelFactory', [])
+  // var ModelFactory = angular.module('AngularModelFactory', [])
 
   var inherits=  function(child, parent) {
     var Surrogate = function() {};
