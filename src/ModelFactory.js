@@ -1,5 +1,4 @@
 ;(function() {
-  // var ModelFactory = angular.module('AngularModelFactory', [])
 
   var inherits=  function(child, parent) {
     var Surrogate = function() {};
@@ -7,9 +6,7 @@
     child.prototype  = new Surrogate();
   }
 
-  ModelFactory.factory('Listener', [function() {
-
-    var Listener = function(options) {
+    Listener = function(options) {
       this.id = options.id;
       this.callback = options.callback;
       this.event = options.event;
@@ -23,18 +20,7 @@
     }
 
 
-
-    return Listener;
-  }])
-
-
-
-
-
-  ModelFactory.factory('Listenable', ['Listener', function(Listener) {
-
-
-    var Listenable = function() {
+    Listenable = function() {
       this.initialize();
     }
 
@@ -147,16 +133,6 @@
       }
     }
 
-
-    return Listenable;
-
-  }]);
-
-
-
-
-
-  ModelFactory.factory( 'BaseModel', ['$http', 'Listenable', function($http, Listenable) {
 
     var BaseModel = function(data) {
       this.initialize(data);
@@ -308,8 +284,6 @@
       return this;
     }
 
-
-
     BaseModel.prototype.destroy = function(options) {
       options = options || {};
       if (this.id) {
@@ -324,16 +298,12 @@
       }
 
     }
-
-
-
     return BaseModel;
 
 }])
 
-ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', function($http, BaseModel, Listenable) {
 
-  var BaseCollection = function(options) {
+  BaseCollection = function(options) {
     this.initialize(options);
   }
   inherits(BaseCollection, Listenable);
@@ -662,11 +632,6 @@ ModelFactory.factory('BaseCollection', ['$http', 'BaseModel', 'Listenable', func
   BaseCollection.prototype.getPage = function(pageNumber) {
     return this.models.slice(this.getStartIndex(pageNumber), this.getStartIndex(pageNumber) + this.perPage);
   }
-
-
-  return BaseCollection;
-
-}]);
 
 
 }());
